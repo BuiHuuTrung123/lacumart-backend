@@ -216,12 +216,12 @@ const getProductDetail = async (productId) => {
         throw new Error(error)
     }
 }
-
 export const productModel = {
     createNew,
     findOneById,
     getAllData,
-    deleteProduct, 
-    update,
-    getProductDetail
+    deleteProduct,
+    getProductDetail,
+    update
+
 }
