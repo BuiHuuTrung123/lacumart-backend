@@ -58,14 +58,14 @@ const findActiveCartByUserId = async (userId) => {
 }
 
 // Thêm sản phẩm vào cart
-const addItemToCart = async (userId, itemInCart) => {
+const addItemToCart = async (userId, cartItem) => {
   try {
     const userObjId = new ObjectId(userId)
     const simplifiedItem = {
-      ...itemInCart,     // ✅ chỉ lấy id
-      price: itemInCart.price.current,
-      // ✅ lấy current price (number)
+      ...cartItem,
+      price: cartItem.price.current,
     }
+
     // 1. Tìm cart active của user
     const activeCart = await GET_DB()
       .collection(CART_COLLECTION_NAME)
@@ -81,34 +81,36 @@ const addItemToCart = async (userId, itemInCart) => {
         userId: userObjId,
         items: [simplifiedItem],
         status: 'active',
-        total: itemInCart.price.current * itemInCart.quantity,
+        total: cartItem.price.current * cartItem.quantity,
         createdAt: new Date(),
         updatedAt: new Date()
       }
-      return await createNew(newCart)
+      await createNew(newCart)
+
+      const cartCurrent = await GET_DB()
+        .collection(CART_COLLECTION_NAME)
+        .findOne({
+          userId: userObjId,
+          status: 'active',
+          _destroy: false
+
+        })
+      console.log('cartCurrent', cartCurrent)
+      return cartCurrent
     }
-    //Tìm item index trong array
-    // const itemIndex = activeCart.items.findIndex(item =>
-    //   item.productId.toString() === itemInCart.productId.toString()
-
-    // )
-
-    // if (itemIndex === -1) {
-    //   throw new Error('Product not in cart')
-    // }
-
 
     const existingItem = activeCart.items.find(item =>
       item.productId.toString() === simplifiedItem.productId.toString()
     )
+
     let newTotal = existingItem
-      ? activeCart.total + existingItem.price // Tăng quantity
-      : activeCart.total + (simplifiedItem.price * simplifiedItem.quantity) // Thêm mới
+      ? activeCart.total + existingItem.price
+      : activeCart.total + (simplifiedItem.price * simplifiedItem.quantity)
     if (existingItem) {
       // 3A. Nếu ĐÃ tồn tại → tăng quantity
       newTotal = activeCart.total + existingItem.price // Total cũ + giá sản phẩm
 
-      await GET_DB().collection('carts').updateOne(
+       await GET_DB().collection('carts').updateOne(
         {
           _id: activeCart._id,
           'items.productId': simplifiedItem.productId
@@ -121,11 +123,14 @@ const addItemToCart = async (userId, itemInCart) => {
           }
         }
       )
+
+
+
     }
     else {
       newTotal = activeCart.total + (simplifiedItem.price * simplifiedItem.quantity)
       // Nếu chưa có -> thêm mới vào mảng
-      await GET_DB().collection('carts').updateOne(
+     await GET_DB().collection('carts').updateOne(
         { _id: activeCart._id },
         {
           $push: { items: simplifiedItem },
@@ -136,10 +141,20 @@ const addItemToCart = async (userId, itemInCart) => {
         },
 
       )
-    }
-    console.log(activeCart)
-    return activeCart
 
+    }
+ 
+    const cartCurrent = await GET_DB()
+      .collection(CART_COLLECTION_NAME)
+      .findOne({
+        userId: userObjId,
+        status: 'active',
+        _destroy: false
+
+      })
+
+   
+return cartCurrent
   } catch (error) {
     throw new Error(error)
   }
