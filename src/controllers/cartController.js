@@ -48,12 +48,26 @@ const deleteProductInCart = async (req, res, next) => {
     try {
 
         const productId = req.params.id
- 
+          
         const { cartActiveId } = req.body
-
+        
 
         const move = await cartModel.deleteProductInCart(productId, cartActiveId)
         res.status(StatusCodes.OK).json(move)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const updateQualityItemToCart = async (req, res, next) => {
+    try {
+        const productId = req.params.id
+        const { cartActiveId, signal } = req.body.data
+       
+
+        const updatedQualityCart = await cartModel.updateQualityItemToCart(productId, cartActiveId, signal)
+            console.log('updatedQualityCart',updatedQualityCart)
+        res.status(StatusCodes.OK).json(updatedQualityCart)
     } catch (error) {
         next(error)
     }
@@ -63,5 +77,6 @@ export const cartController = {
     createNew,
     addItemToCart,
     getCartDetail,
-    deleteProductInCart
+    deleteProductInCart,
+    updateQualityItemToCart
 }

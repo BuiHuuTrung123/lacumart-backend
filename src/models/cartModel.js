@@ -82,6 +82,7 @@ const addItemToCart = async (userId, cartItem) => {
         items: [simplifiedItem],
         status: 'active',
         total: cartItem.price.current * cartItem.quantity,
+        // signal: ['increase', 'reduce'],
         createdAt: new Date(),
         updatedAt: new Date()
       }
@@ -103,14 +104,12 @@ const addItemToCart = async (userId, cartItem) => {
       item.productId.toString() === simplifiedItem.productId.toString()
     )
 
-    let newTotal = existingItem
-      ? activeCart.total + existingItem.price
-      : activeCart.total + (simplifiedItem.price * simplifiedItem.quantity)
+    let newTotal = 0
     if (existingItem) {
       // 3A. Nếu ĐÃ tồn tại → tăng quantity
       newTotal = activeCart.total + existingItem.price // Total cũ + giá sản phẩm
 
-       await GET_DB().collection('carts').updateOne(
+      await GET_DB().collection('carts').updateOne(
         {
           _id: activeCart._id,
           'items.productId': simplifiedItem.productId
@@ -130,7 +129,7 @@ const addItemToCart = async (userId, cartItem) => {
     else {
       newTotal = activeCart.total + (simplifiedItem.price * simplifiedItem.quantity)
       // Nếu chưa có -> thêm mới vào mảng
-     await GET_DB().collection('carts').updateOne(
+      await GET_DB().collection('carts').updateOne(
         { _id: activeCart._id },
         {
           $push: { items: simplifiedItem },
@@ -143,7 +142,7 @@ const addItemToCart = async (userId, cartItem) => {
       )
 
     }
- 
+
     const cartCurrent = await GET_DB()
       .collection(CART_COLLECTION_NAME)
       .findOne({
@@ -153,8 +152,8 @@ const addItemToCart = async (userId, cartItem) => {
 
       })
 
-   
-return cartCurrent
+
+    return cartCurrent
   } catch (error) {
     throw new Error(error)
   }
@@ -187,32 +186,87 @@ const deleteProductInCart = async (productId, cartActiveId) => {
   try {
     const db = GET_DB().collection(CART_COLLECTION_NAME)
 
-    // 1️⃣ Tìm cart trước
-    const cart = await db.findOne({ _id: new ObjectId(cartActiveId) })
+    // 1️ Tìm cart trước
+    const cart = await findOneById(cartActiveId)
     if (!cart) throw new Error('Cart not found')
 
-    // 2️⃣ Tìm product trong cart
+    // 2️ Tìm product trong cart
     const deletedItem = cart.items.find(item => item.productId.equals(new ObjectId(productId)))
     if (!deletedItem) throw new Error('Product not found in cart')
 
-    // 3️⃣ Xóa product khỏi mảng
+    // 3️ Xóa product khỏi mảng
     await db.updateOne(
       { _id: new ObjectId(cartActiveId) },
-      { $pull: { items: { productId: new ObjectId(productId) } } }
+      {
+        $pull: { items: { productId: new ObjectId(productId) } },
+
+        $set: {
+          total: cart.total - (deletedItem.price * deletedItem.quantity),
+          updatedAt: new Date()
+        }
+      }
     )
 
     // 4️⃣ Trả về product đã xóa
-    return deletedItem
+    const updatedCart = await findOneById(cartActiveId)
+    return updatedCart
   } catch (error) {
     throw new Error(error)
   }
 }
 
+const updateQualityItemToCart = async (productId, cartActiveId, signal) => {
+  try {
+
+    const cart = await findOneById(cartActiveId)
+    if (!cart) throw new Error('Cart not found')
+
+    const productInCart = cart.items.find(item => item.productId.equals(new ObjectId(productId)))
+    if (!productInCart) throw new Error('Product not found in cart')
+
+
+    if (signal === 'increase') {
+      await GET_DB().collection(CART_COLLECTION_NAME).updateOne(
+        {
+          _id: new ObjectId(cartActiveId),
+          'items.productId': new ObjectId(productId)
+        },
+        {
+          $inc: {
+            'items.$.quantity': 1,
+            total: productInCart.price
+          },
+          $set: { updatedAt: new Date() }
+        }
+      )
+    }
+    else if (signal === 'reduce') {
+      if (productInCart.quantity <= 1) {
+        await deleteProductInCart(productId, cartActiveId)
+      } else {
+        await GET_DB().collection(CART_COLLECTION_NAME).updateOne(
+          { _id: new ObjectId(cartActiveId), 'items.productId': new ObjectId(productId) },
+          {
+            $inc: { 'items.$.quantity': -1, total: -productInCart.price },
+
+            $set: { updatedAt: new Date() }
+          }
+        )
+      }
+    }
+    const updatedCart = await findOneById(cartActiveId)
+    return updatedCart
+
+  } catch (error) {
+
+  }
+}
 export const cartModel = {
   createNew,
   findActiveCartByUserId,
   findOneById,
   addItemToCart,
   getCartDetail,
-  deleteProductInCart
+  deleteProductInCart,
+  updateQualityItemToCart
 }

@@ -18,6 +18,25 @@ const createNew = async (reqBody) => {
         throw error
     }
 }
+
+// const updateQualityItemToCart = async (productId, cartActiveId, signal) => {
+//     try {
+
+
+//         // Tạo object update data - chỉ những field có giá trị
+//         const updateData = { ...reqBody };
+
+
+
+//         // Gọi model update
+//         const updateQualityItem = await cartModel.updateQualityItemToCart(productId, updateData);
+
+//         return updateQualityItem;
+
+//     } catch (error) {
+//         throw error;
+//     }
+// }
 // Trong service - xây dựng item hoàn chỉnh
 const addItemToCart = async (userId, productId) => {
     // 1. Kiểm tra product tồn tại và lấy thông tin
@@ -35,12 +54,15 @@ const addItemToCart = async (userId, productId) => {
 
     // 3. Gọi model xử lý (truyền cả userId và item)
     const result = await cartModel.addItemToCart(userId, cartItem)
-      
+
     // 4. Trả về cart mới nhất
 
     return result
 }
+
+
 export const cartService = {
     createNew,
-    addItemToCart
+    addItemToCart,
+    // updateQualityItemToCart
 }
