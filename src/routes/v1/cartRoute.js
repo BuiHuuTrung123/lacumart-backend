@@ -9,6 +9,7 @@ Router.route('/')
 // .get(productController.getAllData)
 Router.route('/:id')
     .get(authMiddleware.isAuthorized, cartController.getCartDetail)
+    .put(authMiddleware.isAuthorized, cartController.updateQualityItemToCart)
     .delete(authMiddleware.isAuthorized, cartController.deleteProductInCart)
 //multerUploadMiddleware.upload.single('image')
 export const cartRoute = Router
