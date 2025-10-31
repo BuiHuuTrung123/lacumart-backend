@@ -2,7 +2,8 @@ import { env } from '~/config/environment'
 export const WHITELIST_DOMAINS = [
    'http://localhost:5173',
    'https://trello.trungbui.dev',
-   'https://lacumart-frontend.vercel.app'
+   'https://lacumart-frontend.vercel.app',
+   'https://lacu.trungbui.dev',
 ]
 // export const BOARD_TYPES = {
 //    PRIVATE: 'private',
