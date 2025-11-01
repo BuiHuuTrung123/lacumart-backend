@@ -1,8 +1,7 @@
 import Joi from 'joi'
 import { ObjectId } from 'mongodb'
-import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 import { GET_DB } from '~/config/mongodb'
-
+import { generateUniqueSlug } from '~/utils/slugify'
 const PRODUCT_COLLECTION_NAME = 'products'
 
 // Category Configuration
@@ -83,7 +82,7 @@ const PRICE_LIMITS = {
 const PRODUCT_COLLECTION_SCHEMA = Joi.object({
     // Basic Information
     name: Joi.string().required().min(3).max(100).trim().strict(),
-   
+    slug: Joi.string().min(3).max(100).trim().strict(),
     description: Joi.string().required().min(10).max(1000).trim().strict(),
     // ✅ THÊM: Trường quantification
     quantification: Joi.string().required().min(1).max(100).trim().strict(),
@@ -139,8 +138,16 @@ const validateBeforeCreate = async (data) => {
 const createNew = async (data) => {
     try {
         const validData = await validateBeforeCreate(data)
+        let slug = validData.slug
+        if (!slug) {
+            slug = await generateUniqueSlug(validData.name, PRODUCT_COLLECTION_NAME)
+        }
+
         const newProductToAdd = {
             ...validData,
+            slug,
+            createdAt: new Date(),
+            updatedAt: new Date()
         }
 
         const createProduct = await GET_DB().collection(PRODUCT_COLLECTION_NAME).insertOne(newProductToAdd)
@@ -151,14 +158,23 @@ const createNew = async (data) => {
         throw new Error(error)
     }
 }
-
+const findOneBySlug = async (slug) => {
+    try {
+        const result = await GET_DB().collection(PRODUCT_COLLECTION_NAME).findOne({
+            slug: slug
+        })
+        return result
+    } catch (error) {
+        throw new Error(error)
+    }
+}
 const findOneById = async (id) => {
     try {
         const result = await GET_DB().collection(PRODUCT_COLLECTION_NAME).findOne({
             _id: new ObjectId(id)
         })
 
-       
+
         return result
     } catch (error) {
         throw new Error(error)
@@ -186,32 +202,39 @@ const deleteProduct = async (productId) => {
 const update = async (id, data) => {
     try {
         const condition = { _id: new ObjectId(id) }
-        
+
         // Chỉ update những field có giá trị
         const updateData = { ...data }
+
+        if (updateData.name && !updateData.slug) {
+            const newSlug = await generateUniqueSlug(updateData.name, PRODUCT_COLLECTION_NAME, id)
+            updateData.slug = newSlug
+        }
+
         delete updateData._id // Không cho update _id
-        
+
         const result = await GET_DB().collection(PRODUCT_COLLECTION_NAME).findOneAndUpdate(
             condition,
             { $set: updateData },
             { returnDocument: 'after' }
         )
-        
+
         if (!result) {
             throw new ApiError(StatusCodes.NOT_FOUND, 'Product not found')
         }
-        
+
         return result
     } catch (error) {
         throw error
     }
 }
-const getProductDetail = async (productId) => {
+const getProductDetail = async (productName) => {
     try {
         const result = await GET_DB().collection(PRODUCT_COLLECTION_NAME).findOne({
-            _id: new ObjectId(productId)
+            slug: productName
         })
         return result
+        
     } catch (error) {
         throw new Error(error)
     }
@@ -222,6 +245,7 @@ export const productModel = {
     getAllData,
     deleteProduct,
     getProductDetail,
-    update
+    update,
+    findOneBySlug
 
 }

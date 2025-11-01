@@ -21,7 +21,7 @@ Router.route('/')
     .post(multerUploadMiddleware.upload.single('image'), parseFormDataJson, authMiddleware.isAuthorized, productValidation.createNew, productController.createNew)
 
 Router.route('/:id')
-    .get(productController.getProductDetail)
+
     .delete(authMiddleware.isAuthorized, productController.deleteProduct)
     .put(
         multerUploadMiddleware.upload.single('image'), // ← THÊM UPLOAD ẢNH CHO UPDATE
@@ -30,5 +30,7 @@ Router.route('/:id')
         productValidation.update, // ← SỬ DỤNG VALIDATION UPDATE
         productController.update // ← THÊM CONTROLLER UPDATE
     )
+Router.route('/:productName')
+    .get(productController.getProductDetail)
 //multerUploadMiddleware.upload.single('image')
 export const productRoute = Router

@@ -51,9 +51,11 @@ const update = async (req, res, next) => {
 
 const getProductDetail = async (req, res, next) => {
     try {
+        console.log('req.params',req.params)
         //Điều hướng dữ liệu sang tầng service
-        const productId = req.params.id
-        const productDetail = await productModel.getProductDetail(productId)
+        const productName = req.params.productName
+
+        const productDetail = await productModel.getProductDetail(productName)
     
         // Có kết quả trả về Client
         res.status(StatusCodes.OK).json(productDetail)
