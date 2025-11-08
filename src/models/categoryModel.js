@@ -75,9 +75,48 @@ const getAllData = async () => {
         throw new Error(error)
     }
 }
+const update = async (categoryId, data) => {
+    try {
+        const condition = { _id: new ObjectId(categoryId) }
 
+        // Chỉ update những field có giá trị
+        const updateData = { ...data }
+
+        if (updateData.name && !updateData.slug) {
+            const newSlug = await generateUniqueSlug(updateData.name, CATEGORY_COLLECTION_NAME, categoryId)
+            updateData.slug = newSlug
+        }
+
+        delete updateData._id // Không cho update _id
+
+        const result = await GET_DB().collection(CATEGORY_COLLECTION_NAME).findOneAndUpdate(
+            condition,
+            { $set: updateData },
+            { returnDocument: 'after' }
+        )
+
+        if (!result) {
+            throw new ApiError(StatusCodes.NOT_FOUND, 'Category not found')
+        }
+
+        return result
+    } catch (error) {
+        throw error
+    }
+}
+const deleteCategory = async (categoryId) => {
+    try {
+        const deleteResult = await GET_DB().collection(CATEGORY_COLLECTION_NAME).findOneAndDelete({ _id: new ObjectId(categoryId) });
+
+        return deleteResult
+    } catch (error) {
+        throw new Error(error)
+    }
+}
 export const categoryModel = {
     createNew,
     findOneById,
-    getAllData
+    getAllData,
+    update,
+    deleteCategory
 }

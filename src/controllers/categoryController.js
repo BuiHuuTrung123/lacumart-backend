@@ -15,8 +15,6 @@ const getAllData = async (req, res, next) => {
 const createNew = async (req, res, next) => {
     try {
         //Điều hướng dữ liệu sang tầng service
-           console.log('Received category data:', req.body);
-           console.log('Received file data:', req.file);
         const categoryImageFile = req.file
 
         const createdCategory = await categoryService.createNew(req.body, categoryImageFile)
@@ -27,7 +25,31 @@ const createNew = async (req, res, next) => {
         next(error)
     }
 }
+
+const update = async (req, res, next) => {
+    try {
+        const categoryId = req.params.id
+        const categoryImageFile = req.file
+
+        const updatedCategory = await categoryService.update(categoryId, req.body, categoryImageFile)
+
+        res.status(StatusCodes.OK).json(updatedCategory)
+    } catch (error) {
+        next(error)
+    }
+}
+const deleteCategory = async (req, res, next) => {
+    try {
+        const categoryId = req.params.id
+        const move = await categoryModel.deleteCategory(categoryId)
+        res.status(StatusCodes.OK).json(move)
+    } catch (error) {
+        next(error)
+    }
+}
 export const categoryController = {
     getAllData,
-    createNew
+    createNew, 
+    update,
+    deleteCategory
 }

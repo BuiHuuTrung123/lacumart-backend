@@ -10,6 +10,7 @@ const createNew = async (req, res, next) => {
   const correctCondition = Joi.object({
     email: Joi.string().required().pattern(EMAIL_RULE).message(EMAIL_RULE_MESSAGE),
     password: Joi.string().required().pattern(PASSWORD_RULE).message(PASSWORD_RULE_MESSAGE)
+    
   })
 
   try {
@@ -51,7 +52,14 @@ const update = async (req, res, next) => {
   const correctCondition = Joi.object({
     displayName: Joi.string().trim().strict(),
     current_password: Joi.string().pattern(PASSWORD_RULE).message(`current_password: ${PASSWORD_RULE_MESSAGE}`),
-    new_password: Joi.string().pattern(PASSWORD_RULE).message(`new_password: ${PASSWORD_RULE_MESSAGE}`)
+    new_password: Joi.string().pattern(PASSWORD_RULE).message(`new_password: ${PASSWORD_RULE_MESSAGE}`),
+    phoneNumber: Joi.string().trim().strict(),
+    address: Joi.string().trim().strict(),
+    gender: Joi.string().valid('Khác', 'Nam', 'Nữ'),
+    dateOfBirth: Joi.date().iso().messages({
+      'date.format': 'dateOfBirth must be in ISO format (YYYY-MM-DD)'
+    })
+
   })
 
   try {

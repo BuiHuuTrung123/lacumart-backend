@@ -6,7 +6,7 @@ const createNew = async (req, res, next) => {
         //Điều hướng dữ liệu sang tầng service
        
         const createCart = await cartService.createNew(req.body)
-        console.log('cons', createCart)
+
 
         // Có kết quả trả về Client
         res.status(StatusCodes.CREATED).json(createCart)
@@ -66,17 +66,27 @@ const updateQualityItemToCart = async (req, res, next) => {
        
 
         const updatedQualityCart = await cartModel.updateQualityItemToCart(productId, cartActiveId, signal)
-            console.log('updatedQualityCart',updatedQualityCart)
+      
         res.status(StatusCodes.OK).json(updatedQualityCart)
     } catch (error) {
         next(error)
     }
 }
-
+const patchStatusCart = async (req, res, next) => {
+    try {
+        const cartId = req.params.id
+        const updateStatus = await cartModel.patchStatusCart(cartId)
+      
+        res.status(StatusCodes.OK).json(updateStatus)
+    } catch (error) {
+        next(error)
+    }
+}
 export const cartController = {
     createNew,
     addItemToCart,
     getCartDetail,
     deleteProductInCart,
-    updateQualityItemToCart
+    updateQualityItemToCart,
+    patchStatusCart
 }

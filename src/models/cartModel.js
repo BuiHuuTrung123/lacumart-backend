@@ -44,11 +44,12 @@ const createNew = async (data) => {
 
 // Tìm cart active của user
 const findActiveCartByUserId = async (userId) => {
+
   try {
     return await GET_DB()
       .collection(CART_COLLECTION_NAME)
       .findOne({
-        userId,
+        userId: new ObjectId(userId),
         status: 'active',
         _destroy: false
       })
@@ -96,7 +97,7 @@ const addItemToCart = async (userId, cartItem) => {
           _destroy: false
 
         })
-      console.log('cartCurrent', cartCurrent)
+
       return cartCurrent
     }
 
@@ -261,6 +262,49 @@ const updateQualityItemToCart = async (productId, cartActiveId, signal) => {
 
   }
 }
+const updateCartStatus = async (cartId, status) => {
+  try {
+    const result = await GET_DB()
+      .collection(CART_COLLECTION_NAME)
+      .updateOne(
+        {
+          _id: new ObjectId(cartId)
+        },
+        {
+          $set: {
+            updatedAt: new Date()
+          }
+        }
+      )
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+const patchStatusCart = async (cartId) => {
+  console.log('cartId', cartId)
+  try {
+    const result = await GET_DB()
+      .collection(CART_COLLECTION_NAME)
+      .updateOne(
+        {
+          _id: new ObjectId(cartId),
+          status: 'active'
+        },
+        {
+          $set: {
+            status: 'complete',
+            updatedAt: new Date()
+          }
+        }
+      )
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 export const cartModel = {
   createNew,
   findActiveCartByUserId,
@@ -268,5 +312,7 @@ export const cartModel = {
   addItemToCart,
   getCartDetail,
   deleteProductInCart,
-  updateQualityItemToCart
+  updateQualityItemToCart,
+  updateCartStatus,
+  patchStatusCart
 }

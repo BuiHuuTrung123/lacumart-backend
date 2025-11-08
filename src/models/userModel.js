@@ -18,7 +18,10 @@ const USER_COLLECTION_SCHEMA = Joi.object({
   displayName: Joi.string().required().trim().strict(),
   avatar: Joi.string().default(null),
   role: Joi.string().valid(USER_ROLES.CLIENT, USER_ROLES.ADMIN).default(USER_ROLES.CLIENT),
-
+  address: Joi.string().default(''),
+  phoneNumber: Joi.string().default(''),
+  dateOfBirth: Joi.date().default(null),
+  gender: Joi.string().valid('Khác', 'Nam', 'Nữ').default('Nam'),
   isActive: Joi.boolean().default(false),
   verifyToken: Joi.string(),
 
@@ -84,7 +87,7 @@ const update = async (userId, updateData) => {
         { $set: updateData },
         { returnDocument: 'after' } // trả về kết quả mới sau khi cập nhật
       )
-
+   
     return result
   } catch (error) {
     throw new Error(error)

@@ -11,5 +11,6 @@ Router.route('/:id')
     .get(authMiddleware.isAuthorized, cartController.getCartDetail)
     .put(authMiddleware.isAuthorized, cartController.updateQualityItemToCart)
     .delete(authMiddleware.isAuthorized, cartController.deleteProductInCart)
+    .patch(authMiddleware.isAuthorized, cartController.patchStatusCart)
 //multerUploadMiddleware.upload.single('image')
 export const cartRoute = Router
