@@ -16,7 +16,7 @@ export const generateUniqueSlug = async (name, collectionName, excludeId = null)
     })
     
     let slug = baseSlug
-    console.log('Generating slug for:', name, '->', slug)
+   
     let counter = 1
     
     while (true) {

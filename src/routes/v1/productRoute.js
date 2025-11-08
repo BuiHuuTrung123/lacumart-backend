@@ -8,13 +8,13 @@ import { multerUploadMiddleware } from '~/middlewares/multerUploadMiddleware'
 const parseFormDataJson = (req, res, next) => {
     if (req.body.data) {
         try {
-            req.body = JSON.parse(req.body.data);
+            req.body = JSON.parse(req.body.data)
         } catch (error) {
-            return next(new ApiError(StatusCodes.BAD_REQUEST, 'Invalid JSON data'));
+            return next(new ApiError(StatusCodes.BAD_REQUEST, 'Invalid JSON data'))
         }
     }
-    next();
-};
+    next()
+}
 const Router = express.Router()
 Router.route('/')
     .get(productController.getAllData)

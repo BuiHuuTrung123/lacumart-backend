@@ -7,7 +7,7 @@ const createNew = async (reqBody, categoryImageFile) => {
 
         if (categoryImageFile) {
             const uploadResult = await CloudinaryProvider.streamUpload(categoryImageFile.buffer, 'categories');
-            imageUrl = uploadResult.secure_url;
+            imageUrl = uploadResult.secure_url
         }
 
 
@@ -26,6 +26,34 @@ const createNew = async (reqBody, categoryImageFile) => {
         throw error
     }
 }
+// services/categoryService.js - FIX: Loại bỏ image nếu nó null
+const update = async (categoryId, reqBody, categoryImageFile) => {
+  try {
+
+    const { image, ...cleanData } = reqBody;
+    const updateData = { ...cleanData };
+    
+    // CHỈ update image khi có file mới
+    if (categoryImageFile) {
+      const uploadResult = await CloudinaryProvider.streamUpload(categoryImageFile.buffer, 'categories');
+      updateData.image = uploadResult.secure_url;
+     
+    } else {
+    }
+
+    // Xóa các field không cần thiết
+    delete updateData._id;
+    delete updateData.createdAt;
+    delete updateData.updatedAt;
+
+    const updatedCategory = await categoryModel.update(categoryId, updateData);
+    return updatedCategory;
+
+  } catch (error) {
+    throw error;
+  }
+}
 export const categoryService = {
-    createNew
+    createNew,
+    update
 }

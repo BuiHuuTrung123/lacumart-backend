@@ -17,11 +17,15 @@ const parseFormDataJson = (req, res, next) => {
 Router.route('/')
     .get(categoryController.getAllData)
     .post(multerUploadMiddleware.upload.single('image'), parseFormDataJson,authMiddleware.isAuthorized, categoryValidation.createNew, categoryController.createNew)
+        
+Router.route('/:id')
 
-// .get(productController.getAllData)
-// Router.route('/:id')
-//     .get(authMiddleware.isAuthorized, cartController.getCartDetail)
-//     .put(authMiddleware.isAuthorized, cartController.updateQualityItemToCart)
-//     .delete(authMiddleware.isAuthorized, cartController.deleteProductInCart)
-//multerUploadMiddleware.upload.single('image')
+    .delete(authMiddleware.isAuthorized, categoryController.deleteCategory)
+    .put(
+        multerUploadMiddleware.upload.single('image'), // ← THÊM UPLOAD ẢNH CHO UPDATE
+        parseFormDataJson,
+        authMiddleware.isAuthorized,
+        categoryValidation.update, // ← SỬ DỤNG VALIDATION UPDATE
+        categoryController.update // ← THÊM CONTROLLER UPDATE
+    )
 export const categoryRoute = Router

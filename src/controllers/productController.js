@@ -51,7 +51,7 @@ const update = async (req, res, next) => {
 
 const getProductDetail = async (req, res, next) => {
     try {
-        console.log('req.params',req.params)
+
         //Điều hướng dữ liệu sang tầng service
         const productName = req.params.productName
 

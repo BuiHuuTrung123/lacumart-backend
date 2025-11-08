@@ -136,7 +136,9 @@ subCategory: Joi.string().valid(...ALL_SUB_CATEGORIES).when('mainCategory', {
     req.body = validatedData
     next()
   } catch (error) {
+    console.log('error',error)
     const errorMessage = new Error(error).message
+    
     const customError = new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, errorMessage)
     next(customError)
   }
@@ -168,12 +170,7 @@ subCategory: Joi.string().valid(...ALL_SUB_CATEGORIES).when('mainCategory', {
       quantity: Joi.number().min(0),
     }),
 
-    // Media - KHÔNG required khi update (có thể giữ ảnh cũ)
-    image: Joi.forbidden(), // ← KHÔNG CHO PHÉP field này từ client
-    images: Joi.forbidden(), // ← KHÔNG CHO PHÉP field này từ client
     
-    // Các field hệ thống - KHÔNG cho phép update từ client
-
     _id: Joi.forbidden(),
     _destroy: Joi.forbidden(),
     createdAt: Joi.forbidden(),
